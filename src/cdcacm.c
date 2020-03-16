@@ -418,9 +418,20 @@ static const char *usb_strings[] = {
 	"Black Magic UART Port",
 };
 
-static int cdcacm_control_request(usbd_device *dev,
+/* typedef enum usbd_request_return_codes (*usbd_control_callback)(
+		usbd_device *usbd_dev,
 		struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
-		void (**complete)(usbd_device *dev, struct usb_setup_data *req))
+		usbd_control_complete_callback *complete);
+
+typedef void (*usbd_control_complete_callback)(usbd_device *usbd_dev,
+		struct usb_setup_data *req);
+*/
+//static usbd_request_return_codes cdcacm_control_request(usbd_device *dev,
+//		struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
+//		void (**complete)(usbd_device *dev, struct usb_setup_data *req))
+enum usbd_request_return_codes cdcacm_control_request(usbd_device *dev,
+		struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
+		usbd_control_complete_callback *complete )
 {
 	(void)dev;
 	(void)complete;
@@ -434,7 +445,7 @@ static int cdcacm_control_request(usbd_device *dev,
         return 1;
 	case USB_CDC_REQ_SET_LINE_CODING:
 		if(*len < sizeof(struct usb_cdc_line_coding))
-			return 0;
+			return USBD_REQ_NOTSUPP;
 
 		switch(req->wIndex) {
 		case 0:
@@ -447,10 +458,10 @@ static int cdcacm_control_request(usbd_device *dev,
 			usbuart_set_line_coding((struct usb_cdc_line_coding*)*buf, USART1);
 			return 1;
 		default:
-			return 0;
+			return USBD_REQ_NOTSUPP;
 		}
 	}
-	return 0;
+	return USBD_REQ_NOTSUPP;
 }
 
 int cdcacm_get_config(void)
